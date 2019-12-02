@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Blog extends Model
 {
     protected $fillable = [
-        'title', 'description',
+        'title', 'description','bloger_id',
     ];
 
-    public function Bloger()
+    public function bloger()
     {
         return $this->belongsTo('App\Bloger');
     }

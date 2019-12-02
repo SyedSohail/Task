@@ -16,7 +16,10 @@ class BlogController extends Controller
     {
         $blogs = Blog::all();
 
-        return response()->json($blogs) ;
+        return response()->json([
+            'success' => true,
+            'data' => $blogs,
+        ],200);
     }
 
     /**
@@ -45,10 +48,13 @@ class BlogController extends Controller
         $Blog = Blog::Create([
             'title'=> $request->title,
             'description' => $request->description,
-            'bloger_id' => auth()->user->id,
+            'bloger_id' => \Auth::guard('bloger-api')->user()->id,
         ]);
 
-        return response()->json($Blog) ;
+        return response()->json([
+            'success'=>true,
+            'data' => 'Successfully created Blog!'
+        ], 201);
     }
 
     /**
@@ -59,8 +65,10 @@ class BlogController extends Controller
      */
     public function show(Blog $blog)
     {
-        $Blog = Blog::with('Bloger')->whereId($blog->id)->get();
-        return response()->json($Blog) ;
+        return response()->json([
+            'success'=>true,
+            'data' => $blog
+        ], 200);
     }
 
     /**
@@ -71,8 +79,10 @@ class BlogController extends Controller
      */
     public function edit(Blog $blog)
     {
-        $Blog = Blog::with('Bloger')->whereId($blog->id)->get();
-        return response()->json($Blog) ;
+         return response()->json([
+            'success'=>true,
+            'data' => $blog
+        ], 200);
     }
 
     /**
@@ -84,9 +94,21 @@ class BlogController extends Controller
      */
     public function update(Request $request, Blog $blog)
     {
-        $Blog = Blog::whereId($blog->id)->update(['title'=>$request->title,'description'=>$request->description]);
+        $update = $blog->update(['title'=>$request->title,'description'=>$request->description]);
 
-        return response()->json($Blog) ;
+        if( $update){
+
+        return response()->json([
+            'success' => true,
+            'data' => "Update Successfully",
+        ],200);
+        }else{
+
+           return response()->json([
+            'success' => true,
+            'data' => "Cannot Update",
+        ],400);  
+        }
     }
 
     /**
@@ -97,6 +119,20 @@ class BlogController extends Controller
      */
     public function destroy(Blog $blog)
     {
-        //
+        $delete = $blog->delete();
+
+         if($delete){
+
+        return response()->json([
+            'success' => true,
+            'data' => "Delete Successfully",
+        ],200);
+        }else{
+
+           return response()->json([
+            'success' => true,
+            'data' => "Cannot delete",
+        ],400);  
+        }
     }
 }

@@ -92,7 +92,7 @@ return [
         ],
         'blogers' => [
             'driver' => 'eloquent',
-            'model' => App\Blog::class,
+            'model' => App\Bloger::class,
         ],
 
         // 'users' => [

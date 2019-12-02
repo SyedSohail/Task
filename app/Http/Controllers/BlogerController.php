@@ -6,6 +6,7 @@ use App\Bloger;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Validator;
+use Hash;
 
 class BlogerController extends Controller
 {
@@ -16,7 +17,12 @@ class BlogerController extends Controller
      */
     public function index()
     {
-        //
+        $user = Bloger::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $user,
+        ],200);
     }
 
     /**
@@ -37,7 +43,27 @@ class BlogerController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validation = Validator::make($request->all(),[
+            'name' => 'required|string',
+            'email' => 'required|string|email|unique:blogers',
+            'password' => 'required|string|min:8'
+        ]);
+
+        if($validation->fails()){
+            return response()->json(['success'=>false,'data'=>$validation->messages()]);
+        }
+
+        $user = Bloger::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'role' => 'Bloger'
+        ]);
+
+        return response()->json([
+            'success'=>true,
+            'data' => 'Successfully created Bloger!'
+        ], 201);
     }
 
     /**
@@ -48,7 +74,10 @@ class BlogerController extends Controller
      */
     public function show(Bloger $bloger)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => $bloger,
+        ],200);
     }
 
     /**
@@ -59,7 +88,10 @@ class BlogerController extends Controller
      */
     public function edit(Bloger $bloger)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'data' => $bloger,
+        ],200);
     }
 
     /**
@@ -71,7 +103,22 @@ class BlogerController extends Controller
      */
     public function update(Request $request, Bloger $bloger)
     {
-        //
+        $update = $bloger->update(['name' => $request->name,
+            'email' => $request->email,]);
+
+        if( $update){
+
+        return response()->json([
+            'success' => true,
+            'data' => "Update Successfully",
+        ],200);
+        }else{
+
+           return response()->json([
+            'success' => true,
+            'data' => "Cannot Update",
+        ],400);  
+        }
     }
 
     /**
@@ -82,31 +129,21 @@ class BlogerController extends Controller
      */
     public function destroy(Bloger $bloger)
     {
-        //
-    }
-    public function signup(Request $request)
-    {
-        $validation = Validator::make($request->all(),[
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:8'
-        ]);
+        $delete = $admin->delete();
 
-        if($validation->fails()){
-            return response()->json(['success'=>false,'data'=>$validation->messages()]);
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role' => 'User'
-        ]);
+         if($delete){
 
         return response()->json([
-            'success'=>true,
-            'message' => 'Successfully created user!'
-        ], 201);
+            'success' => true,
+            'data' => "Delete Successfully",
+        ],200);
+        }else{
+
+           return response()->json([
+            'success' => true,
+            'data' => "Cannot delete",
+        ],400);  
+        }
     }
      
     public function login(Request $request)
@@ -122,14 +159,27 @@ class BlogerController extends Controller
             return response()->json(['success'=>false,'data'=>$validation->messages()],422);
         }
 
-        $credentials = request(['email', 'password']);
+        /*  API GUARD
 
-        if (!Auth::guard('bloger-api')->attempt($credentials))
+         You cannot use attempt() method on api guards, it just doesnt exist. You NEED to use Auth::guard(web)->attempt() or use your own logic and issue your tokens from the response */
+
+       $user = Bloger::where('email', $request->email)->first();
+
+       if (! $user){
+            return response()->json([
+                'message' => 'User not exists'
+            ], 400);
+            
+        }
+
+        $check = Hash::check($request->password, $user->password);
+
+        if (! $check){
             return response()->json([
                 'message' => 'Email or Password is not correct'
             ], 401);
-
-        $user = $request->user();
+            
+        }
 
         $tokenResult = $user->createToken('Personal Access Token');
         $token = $tokenResult->token;
@@ -139,18 +189,12 @@ class BlogerController extends Controller
 
         $token->save();
 
-        Auth::user()->setAttribute('access_token',$tokenResult->accessToken);
-
-        Auth::user()->setAttribute('token_type','Bearer');
-
-        Auth::user()->setAttribute('expires_at',Carbon::parse(
-            $tokenResult->token->expires_at
-        )->toDateTimeString());
+     $user->access_token = $tokenResult->accessToken;
 
         return response()->json([
             'success' => true,
             'user' => $user,
-        ]);
+        ],200);
     }
     
     public function logout(Request $request)

@@ -5,20 +5,29 @@ namespace App;
 
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Model;
 
 class Bloger extends Authenticatable
 {
 	use HasApiTokens,Notifiable;
 	
-	protected $guard = 'bloger';
+	protected $guard = 'bloger-api';
 
 	protected $fillable = [
-         'email', 'password','role'
-    ]; 
+        'name', 'email', 'password','role'
+    ];
 
-    public function Blog()
+     
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    public function blog()
     {
         return $this->hasMany('App\Blog');
     }

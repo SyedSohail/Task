@@ -20,26 +20,28 @@ use Illuminate\Http\Request;
 Route::post('admin/signup','AdminController@signup');
 Route::post('admin/login','AdminController@login');
 
-Route::post('user/signup','UserController@signup');
-Route::post('/user/login','UserController@login');
+// Route::post('user/signup','UserController@signup');
+Route::post('user/login','UserController@login');
 
-Route::post('bloger/signup','BlogerController@signup');
+// Route::post('bloger/signup','BlogerController@signup');
 Route::post('bloger/login','BlogerController@login');
 
-// Route::group(['middleware' => ['auth:api'],'prefix' => 'admin'], function () {
+Route::group(['middleware' => ['auth:admin-api','admin'],'prefix' => 'admin'], function () {
 
-// 	Route::resource('blog','AdminController');
+	Route::resource('users','UserController');
+	Route::resource('blogers','BlogerController');
 
-// 	});
+	});
 
-// Route::group(['middleware' => ['auth:api'],'prefix' => 'user'], function () {
+Route::group(['middleware' => ['auth:user-api','user'],'prefix' => 'user'], function () {
 
+	Route::resource('blogers','BlogerController');
 
-// 	});
+	});
 
-Route::group(['middleware' => ['auth:api'],'prefix' => 'bloger'], function () {
+Route::group(['middleware' => ['auth:bloger-api','bloger'],'prefix' => 'bloger'], function () {
 
-	Route::resource('blog','BlogerController');
+	Route::resource('blogs','BlogController');
 
 
 	});

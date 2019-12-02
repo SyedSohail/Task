@@ -20,7 +20,7 @@ class CreateBlogsTable extends Migration
             $table->string('description');
             $table->timestamps();
 
-            $table->foreign('bloger_id')->references('id')->on('blogs')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('bloger_id')->references('id')->on('blogers')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
